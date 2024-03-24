@@ -333,7 +333,8 @@ def main():
 
     # load reference db
     print(strftime("%Y-%m-%d %H:%M:%S | ") + "Locating reference DB.")
-    db = os.path.join(args.tmp, args.ref_db)
+    db = args.ref_db
+    #db = os.path.join(args.tmp, args.ref_db)
     if os.path.isfile(db):
         if args.ref_gtf:
             print(strftime("%Y-%m-%d %H:%M:%S | ") + "Reference DB already present in the tmp dir.\n"
@@ -351,7 +352,7 @@ def main():
 
     if args.syn is not None:
         print("loading gene synonyms...")
-        gsyn_tbl = load_gene_syn(args)
+        gsyn_tbl = load_gene_syn(args.syn)
 
     # load orfs
     print(strftime("%Y-%m-%d %H:%M:%S | ") + "Loading ORFs.")
