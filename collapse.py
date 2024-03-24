@@ -98,6 +98,7 @@ def collapse(fn):
     for seq in seq_tbl:
         name_lst = seq_tbl[seq]
         key = name_lst[0]
+        dup_tbl[key] = list()
         uniq_lst.append(key)
         for i in range(1, len(name_lst)):
             name = name_lst[i]
