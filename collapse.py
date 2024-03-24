@@ -36,7 +36,7 @@ def filter_and_renum_gtf(gtf_fn, out_fn, tx_lst):
             out_fh.write(out_ln)
     gtf_fh.close()
     out_fh.close()
-    print("total # of transcripts after collapse: " + str(ctr))
+    #print("total # of transcripts after collapse: " + str(ctr))
     return tx_index
 
 
@@ -89,14 +89,15 @@ def renum_tx(ln, ctr):
 def collapse(fn):
     seq_tbl = dict()
     for name, seq in pyfastx.Fasta(fn, build_index=False):
-        if seq not in seq_tbl:
-            seq_tbl[seq] = [name]
+        seq_upper = seq.upper()
+        if seq_upper not in seq_tbl:
+            seq_tbl[seq_upper] = [name]
         else:
-            seq_tbl[seq].append(name)
+            seq_tbl[seq_upper].append(name)
     dup_tbl = dict()
     uniq_lst = list()
     for seq in seq_tbl:
-        name_lst = seq_tbl[seq]
+        name_lst = sorted(seq_tbl[seq])
         key = name_lst[0]
         dup_tbl[key] = list()
         uniq_lst.append(key)
@@ -175,20 +176,26 @@ def main_collapse(nt_fn, prot_fn, gtf_fn, genome_fn, out_prefix):
         print("handling a couple of edge cases...")
         is_edge = True
         to_del_set = set()
-        consensus_tbl = dict()
+        mate_tbl = dict()
         for nt_tid in nt_uniq_lst:
-            nt_dup_lst = nt_dup_tbl[nt_tid]
-            prot_dup_lst = prot_dup_tbl[nt_tid]
-            if len(nt_dup_lst) != len(prot_dup_lst):
-                if len(nt_dup_lst) > len(prot_dup_lst):
-                    print("this can't happen")
-                    sys.exit()
-                diff = set(prot_dup_lst) - set(nt_dup_lst)
-                consensus_tbl[nt_tid] = diff
-                to_del_set |= diff
+            if nt_tid not in prot_dup_tbl:
+                to_del_set.add(nt_tid)
+                mate = None
+                for prot_tid in prot_dup_tbl:
+                    if nt_tid in prot_dup_tbl[prot_tid]:
+                        mate = prot_tid
+                        break
+                assert mate is not None
+                to_del_set.add(nt_tid)
+                if mate not in mate_tbl:
+                    mate_tbl[mate] = nt_tid
+                else:
+                    mate_tbl[mate].append(nt_tid)
 
     filt_gtf_fn = out_prefix + "_dup_removed.gtf"
     tx_index = filter_and_renum_gtf(gtf_fn, filt_gtf_fn, nt_uniq_lst)
+    filt_gtf_fn = out_prefix + "_dup_removed.final.gtf"
+    _ = filter_and_renum_gtf(gtf_fn, filt_gtf_fn, prot_uniq_lst)
     filt_nt_fn = out_prefix + "_dup_removed_txs.fa"
     filt_prot_fn = out_prefix + "_dup_removed_prots.fa"
 
@@ -203,16 +210,16 @@ def main_collapse(nt_fn, prot_fn, gtf_fn, genome_fn, out_prefix):
     # remove duplicate protein sequences that are NOT duplicates on nucleotide levels
     if is_edge:
         print("removing anomalous duplicate protein sequences...")
-        final_prot_fn = out_prefix + "_dup_removed_prots_final.fa"
+        final_prot_fn = out_prefix + "_dup_removed_prots.final.fa"
         final_prot_fh = open(final_prot_fn, 'w')
         for name, seq in pyfastx.Fasta(filt_prot_fn, build_index=False):
             if name in to_del_set:
                 continue
-            elif name in consensus_tbl:
+            elif name in mate_tbl:
                 name_rev = name
-                dup_lst = consensus_tbl[name]
-                for did in dup_lst:
-                    name_rev = name_rev + "|" + did
+                mates = mate_tbl[name]
+                for tid in mates:
+                    name_rev = name_rev + "|" + tid
                 write2fa(name_rev, seq, final_prot_fh)
             else:
                 write2fa(name, seq, final_prot_fh)
