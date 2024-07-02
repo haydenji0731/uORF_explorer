@@ -12,7 +12,7 @@ If you encounter an error in installing one of the dependencies, you can directl
 
 ### Running uORFinder ###
 
-**uORFinder** is a Python program that maps (typically) short uORF nucleotide sequences to a target genome. We use pysam (wrapper for [minimap2](https://github.com/lh3/minimap2)) for mapping / alignment. You'll need GTF/GFF and FASTA files for both the query uORFs and target genome. You can easily extract nucleotide sequences for a given GTF/GFF file using [GffRead](https://ccb.jhu.edu/software/stringtie/gff.shtml). Run uORFinder as follows:
+**uORFinder** is a Python program that maps (typically) short uORF nucleotide sequences to a target genome. We use mappy (wrapper for [minimap2](https://github.com/lh3/minimap2)) for mapping / alignment. You'll need GTF/GFF and FASTA files for both the query uORFs and target genome. You can easily extract nucleotide sequences for a given GTF/GFF file using [GffRead](https://ccb.jhu.edu/software/stringtie/gff.shtml). Run uORFinder as follows:
 ```
 $ uORFinder.py -ogtf query_uorfs.gtf -ofa query_uorfs.fa -tgtf target_annotation.gff3 -tfa target_genome.fa -tdb target_genome_db --tmp-dir tmp_dir -o out_dir -t num_threads
 ```
