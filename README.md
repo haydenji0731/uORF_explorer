@@ -2,6 +2,8 @@
 
 **uORF_explorer** is a suite of tools used to explore potentially protein coding exons in upstream open reading frame (uORF) regions in a target genome. The suite is largely divided into two parts: (1) checking for sequence-level conservation of uORF sequences and (2) constructing protein coding exon candidates using some splicing evidence.
 
+WIP: I'm working on polishing the readability and usability of this suite. If you have a specific request, please open an issue. I'll try to accomodate it as much as possible.
+
 ### Installation ###
 
 We recommend that you create a Python virtual environment (venv) or a conda environment and then install the dependencies specified in requirements.txt as following:
